@@ -4,6 +4,11 @@
  */
 var allPaintings = [];
 /**
+ * Global Variable to store Artsy API Key
+ * @Global String
+ */
+var API_Key = "";
+/**
  * Global variable to store the index in allPaintings of the currently displayed painting
  * @Global {Number}
  */
@@ -29,8 +34,30 @@ splashPage.paintingTitle = "Agile Creation";
 splashPage.artistImage = "assets/images/ourGroup.jpg";
 allPaintings.push(splashPage);
 /**
+ * AJAX call to Artsy to receive current API Key
+ * @return {JSON} Artsy API key
+ */
+function getAPIKey(){
+    var deferred = $.Deferred();
+    $.ajax({ //Random artwork lookup
+        url: "https://api.artsy.net/api/tokens/xapp_token",
+        method: "POST",
+        dataType: "json",
+        headers: {
+            "Accept": "application/json",
+        },
+        data: {
+            "client_id": "07de84579f1b1d4f2469",
+            "client_secret": "7e525c19a317a2168862448aadd9e963"
+        },
+        success: deferred.resolve, //Function to begin diverging branches of Ajax chain
+        error: deferred.reject
+    });
+    return deferred;
+}
+/**
  * AJAX call to Artsy to receive random artwork with information
- * @return {JSON} Paiting image, painting title, painting ID, and gallery name (with conditional to check if empty)
+ * @return {JSON} Painting image, painting title, painting ID, and gallery name (with conditional to check if empty)
  */
 function getNewPainting(){
     $.ajax({ //Random artwork lookup
@@ -38,7 +65,7 @@ function getNewPainting(){
         method: "GET",
         dataType: "json",
         headers: {
-            "X-Xapp-Token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6IiIsImV4cCI6MTUwNTQxODc1MywiaWF0IjoxNTA0ODEzOTUzLCJhdWQiOiI1OTliMzIwYzljMThkYjZmNzlkN2ViNmYiLCJpc3MiOiJHcmF2aXR5IiwianRpIjoiNTliMWEzODFiMjAyYTM0ZDc5MDVjNmU2In0.BozO2qrpQvQ19UyS4T3uigTogqiQQrMusug9ZO4knqw",
+            "X-Xapp-Token": API_Key,
         },
         success: startAjaxBranches, //Function to begin diverging branches of Ajax chain
         error: errorFunction
@@ -80,7 +107,7 @@ function getPaintingArtist(location, response) {
             "artwork_id": response.id
         },
         headers: {
-            "X-Xapp-Token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6IiIsImV4cCI6MTUwNTQxODc1MywiaWF0IjoxNTA0ODEzOTUzLCJhdWQiOiI1OTliMzIwYzljMThkYjZmNzlkN2ViNmYiLCJpc3MiOiJHcmF2aXR5IiwianRpIjoiNTliMWEzODFiMjAyYTM0ZDc5MDVjNmU2In0.BozO2qrpQvQ19UyS4T3uigTogqiQQrMusug9ZO4knqw",
+            "X-Xapp-Token": API_Key,
         },
         success: getArtistBio.bind(this, location), //get artist biography from Wikipedia
         error: errorFunction
@@ -517,9 +544,12 @@ $(document).ready(function() {
     allPaintings[0].populatePage(2); //put splash page on face 2
     $('.rotateTop').addClass('clickable').on('click', rotateTop); //apply click handler to rotate top button
     $('.rotateDown').addClass('clickable').on('click', rotateDown); //apply click handler to rotate bottom button
-    for(var i = 0; i < 10; i++) { //create ten paintings on load
-        getNewPainting();
-    }
+    getAPIKey().then((response)=>{
+            API_Key = response.token
+            for(var i = 0; i < 10; i++) { //create ten paintings on load
+                getNewPainting();
+            }
+        }, errorFunction)
     var timer = setInterval(function(){ //populate faces once at least 5 paintings have been created
         if(completedPaintings > 4){
             openGalleryDoors();
