@@ -77,7 +77,7 @@ function getNewPainting(){
  * @return {undefined}
  */
 function startAjaxBranches (response) {
-    if (response.collecting_institution === "" || !("image" in response._links)) { //check if returned random painting has a home gallery
+    if (response.collecting_institution === "" || !("image" in response._links)) { //check if returned random painting has a home gallery and a painting image
         return getNewPainting(); //if not, exit Ajax Chain, and begin new Ajax chain with finding new painting
     }
     var painting = new Painting(); //create painting object to store painting information throughout Ajax call
@@ -87,7 +87,7 @@ function startAjaxBranches (response) {
 }
 /**
  * AJAX call to Artsy to recieve Artist name and portrait from the painting ID
- * @param {string} location - The location of the painting gallery
+ * @param {string} location - Location of target painting in allPaintings array
  * @param {string} response - painting ID and XAPP token returned from the previous AJAX call
  * @return {JSON} Artist name and artist image
  */
@@ -113,10 +113,9 @@ function getPaintingArtist(location, response) {
         error: errorFunction
     });
 }
-
 /**
  * AJAX call to Google Geocoding to show the location of the home gallery
- * @param {string} location - Home gallery name
+ * @param {string} location - Location of target painting in allPaintings array
  * @param {string} response - the returned data from the previous AJAX call
  * @return {number} Latitude and Longitude of the gallery
  */
@@ -136,7 +135,7 @@ function getGalleryLocation(location, response) {
 }
 /**
  * AJAX call to Google Maps to display a map of the painting's housing gallery
- * @param {number} location - Latitude and Longitude of the housing gallery
+ * @param {number} location - Location of target painting in allPaintings array
  * @param {string} response - The response from the previous AJAX calls
  * @return {Object} jQuery wrapped DOM element to add to container div
  */
@@ -155,8 +154,8 @@ function getGalleryMap(location, response){
 }
 /**
  * Function to handle Google Map creation for Splash Page outside of Ajax Chain
- * @param lat
- * @param long
+ * @param lat - Latitude
+ * @param long - Longitude
  * @return {Object} jQuery wrapped DOM element to add to container div
  */
 function getMapElement(lat, long){
@@ -171,7 +170,7 @@ function getMapElement(lat, long){
 }
 /**
  * AJAX call
- * @param {string} location - The location of the Painting Gallery
+ * @param {string} location - Location of target painting in allPaintings array
  * @param {string} response - Artist's name
  * @return {JSON} Artist's short biography from Wikipedia
  */
@@ -205,8 +204,8 @@ function getArtistBio(location, response) {
 }
 /**
  * AJAX call to get artist portrait from wikipedia.
- * @param artist_name
- * @param location
+ * @param artist_name - Name of target painting's creator
+ * @param location - Location of target painting in allPaintings array
  */
 function getArtistImage(location, artist_name){
     $.ajax({ //get first passage of Wikipedia of Artist
@@ -219,9 +218,6 @@ function getArtistImage(location, artist_name){
             format: "json",
             prop: "pageimages",
             pithumbsize: 200
-            //prop: "text|images",
-            //exintro: true,
-            //explaintext: true
         },
         success: successArtistImage.bind(this, location),
         error: errorArtistImage.bind(this, location)
@@ -229,8 +225,8 @@ function getArtistImage(location, artist_name){
 }
 /**
  * Function to set Painting object's artist image if AJAX call is successful
- * @param location
- * @param response
+ * @param location - Location of target painting in allPaintings array
+ * @param response - response from artist image AJAX call
  */
 function successArtistImage(location, response){
     var pagesKeys = Object.keys(response.query.pages);
@@ -244,8 +240,8 @@ function successArtistImage(location, response){
 }
 /**
  * Error handler for artist image Mediawiki AJAX call.
- * @param location
- * @param response
+ * @param location - Location of target painting in allPaintings array
+ * @param response - response from artist image AJAX call
  */
 function errorArtistImage(location, response){
     console.log("Error querying Mediawiki for artist image", response);
@@ -253,7 +249,8 @@ function errorArtistImage(location, response){
 }
 /**
  * Function to handle completion of Artist Bio Ajax call
- * @Param response Data returned from Ajax call
+ * @param location - Location of target painting in allPaintings array
+ * @param response - Data returned from Ajax call
  */
 function successArtistBio (location, response) {
     var pageKey = Object.keys(response.query.pages); //remember key from subobject with randomized name
@@ -262,7 +259,7 @@ function successArtistBio (location, response) {
 }
 /**
  * Function to check if all Ajax calls have been completed successfully, and change status to "no longer in ajax chain"
- * @Param none
+ * @param location - Location of target painting in allPaintings array
  */
 function checkForAjaxCompletion (location) {
     for(index in allPaintings[location]){ //check all values in painting being created
@@ -271,11 +268,10 @@ function checkForAjaxCompletion (location) {
         }
     }
     completedPaintings++;
-    console.log(allPaintings[location]); //log out created painting
 }
 /**
  * Function to handle click on "back" button to see previous painting
- * @Param none
+ * @param none
  */
 function previousPainting(){
     $('.previousPainting, .nextPainting, .rotateTop, .rotateDown').off().removeClass('clickable'); //remove click handlers on button
@@ -309,7 +305,7 @@ function previousPainting(){
 }
 /**
  * Function to handle click on "next" button to see next painting
- * @Param none
+ * @param none
  */
 function nextPainting(){
     $('.previousPainting, .nextPainting, .rotateTop, .rotateDown').off().removeClass('clickable'); //remove click handlers
@@ -342,7 +338,7 @@ function nextPainting(){
 }
 /**
  * Function to handle Error in Ajax chain process
- * @Param err Error being returned
+ * @param err Error being returned
  */
 function errorFunction(err){
     console.log("There was an error: ", err);
@@ -359,9 +355,9 @@ function reset(gallery_wall){
     $('.' + gallery_wall + ' .map_image_div').empty(); //removes map element
 }
 /**
- * Function to return the first letterss of a string under a specified char limit
- * @param char_lim
- * @param  str
+ * Function to return the first letters of a string under a specified char limit
+ * @param char_lim - Max number of characters desired
+ * @param  str - string to shorten, if necessary
  * @return {string}
  */
 function firstWordsUnderCharLim(char_lim, str){ //truncate painting title to fit on title plaque
@@ -381,35 +377,29 @@ function firstWordsUnderCharLim(char_lim, str){ //truncate painting title to fit
 
 function Painting() {
     /**
-     * @Private Image of the Painting
+     * @private Image of the Painting
      */
     this.paintingImage = null;
-
     /**
-     * @Private Title of the Painting
+     * @private Title of the Painting
      */
     this.paintingTitle = null;
-
     /**
-     * @Private Artist Name
+     * @private Artist Name
      */
     this.artistName = null;
-
     /**
-     * @Private Artist Portrait
+     * @private Artist Portrait
      */
     this.artistImage = null;
-
     /**
-     * @Private Artist Bio
+     * @private Artist Bio
      */
     this.artistBiography = null;
-
     /**
-     * @Private Painting Gallery
+     * @private Painting Gallery
      */
     this.paintingGallery = null;
-
     /**
      * @private Latitude and Longitude of the Gallery
      */
@@ -417,28 +407,25 @@ function Painting() {
         latitude: null,
         longitude: null
     };
-
     /**
      * @private ID of the Painting
      */
     this.paintingID = null;
-
     /**
      * @private ID of the Map
      */
     this.paintingMap = null;
-
     /**
      * Method to create a DOM image
-     * @Param {string, string} What image to target and where to append the DOM image to
+     * @param {string} targetImage - What image to target
+     * @param {string} targetImage - Where to append the DOM image to
      */
     this.createImageDOM = function(targetImage, appendTarget) {
         $(appendTarget).css('background-image', 'url(' + targetImage +')');
     };
-
     /**
      * Method that calls all of the Methods to add DOM elements to the page
-     * @param {number} galleryWallNumber is the number of the Gallery Wall to be populated
+     * @param {number} galleryWallNumber - the number of the Gallery Wall to be populated
      */
     this.populatePage = function(galleryWallNumber) {
         this.createImageDOM(this.paintingImage, '.gallery_wall_' + galleryWallNumber + ' .painting_image_div'); //put painting image in frame on dom
@@ -451,8 +438,8 @@ function Painting() {
     /**
      * Method to take in a string and return it with all instances of "x" replaced with "y"
      * @param {string} string
-     * @param {string} x
-     * @param {string} y
+     * @param {string} x - character to be replaced
+     * @param {string} y - character to replace it with
      * @return {string}
      */
     this.replaceXwithY = function(string, x, y) {
@@ -460,8 +447,8 @@ function Painting() {
     };
     /**
      * Method to take in a url in string format and return it with default image_version placeholder replaced with desired image size
-     * @param {string} url
-     * @param {string} size
+     * @param {string} url - unformatted url
+     * @param {string} size - desired image size (medium, large, small...)
      * @return {string}
      */
     this.setPaintingSize = function(url, size) {
@@ -470,14 +457,14 @@ function Painting() {
 }
 /**
  * Function to rotate gallery on click
- * @Param {number} newRotation Number of degrees to rotate
+ * @param {number} newRotation - Number of degrees to rotate
  */
 function rotateGallery(newRotation) {
     $('.gallery_column').css('transform','translate3d(-49vmin, 0, -49vmin) rotateY(' + newRotation + 'deg)');
 }
 /**
  * Function to rotate gallery to top of cube
- * @Param none
+ * @param none
  */
 function rotateTop() {
     $('.nextPainting, .previousPainting, .rotateTop, .rotateDown').removeClass('clickable').off();
@@ -493,7 +480,10 @@ function rotateTop() {
         $('.rotateDown').addClass('clickable').on("click", rotateDown);
     }, 2000)
 }
-
+/**
+ * Function to begin animation to open gallery doors when intial loading is complete
+ * @param none
+ */
 function openGalleryDoors() {
     $('.leftDoor, .leftDoorGlass').css('animation','openLeft 5s ease-in');
     $('.rightDoor, .rightDoorGlass').css('animation','openRight 5s ease-in');
@@ -502,7 +492,7 @@ function openGalleryDoors() {
 }
 /**
  * Function to rotate gallery down from top of cube
- * @Param none
+ * @param none
  */
 function rotateDown() {
     $('.nextPainting, .previousPainting, .rotateTop, .rotateDown').removeClass('clickable').off(); //remove click handlers
@@ -521,7 +511,7 @@ function rotateDown() {
 }
 /**
  * Function to display Modal when clicking Painting
- * @Param none
+ * @param none
  */
 function displayModal() {
     var $myModal = $("#myModal");
@@ -538,7 +528,7 @@ function displayModal() {
 }
 /**
  * Function to handle all actions that will occur on page load
- * @Param none
+ * @param none
  */
 $(document).ready(function() {
     allPaintings[0].populatePage(2); //put splash page on face 2
