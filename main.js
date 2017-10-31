@@ -1,26 +1,26 @@
 /**
  * Global Variable to store all previously generated Painting Objects
- * @Global {Array} of {Objects}
+ * @global {Array} of {Objects}
  */
 var allPaintings = [];
 /**
  * Global Variable to store Artsy API Key
- * @Global String
+ * @global {String}
  */
 var API_Key = "";
 /**
  * Global variable to store the index in allPaintings of the currently displayed painting
- * @Global {Number}
+ * @global {Number}
  */
 var currentPainting = 0;
 /**
  * Global variable to store how many paintings have been completely created
- * @Global {Number}
+ * @global {Number}
  */
 var completedPaintings = 0;
 /**
  * Global Variable to store information to build initial Splash Page
- * @Global {Object}
+ * @global {Object}
  */
 var splashPage = new Painting();
 splashPage.artistBiography = "Welcome to the Endless Gallery! With information pulled from four separate API's by the talented coding artists you see above, you can explore a vast collection of artworks, view that painting's artist and current location in the world, as well as read a short biography of the artist who created it, where available. This application was made with data pulled from the Artsy API, the Google Geocoding API, the Google Maps API, and the MediaWiki unofficial Wikipedia API. Thank you for taking the time to explore our Endless Gallery, and enjoy!";
@@ -374,7 +374,6 @@ function firstWordsUnderCharLim(char_lim, str){ //truncate painting title to fit
  * @constructor
  * @this {Painting}
  */
-
 function Painting() {
     /**
      * @private Image of the Painting
